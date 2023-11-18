@@ -112,6 +112,18 @@ namespace Paratranz.UE5
 
         public static void ExportNamespace(LocresNamespace locresNamespace, string directory)
         {
+            var nsName = locresNamespace.Name;
+            if (nsName == "")
+            {
+                nsName = g_UE5GlobalNamespace;
+            }
+            var csv = ToCsv(locresNamespace);
+            var filePath = Path.Combine(directory, nsName + ".csv");
+            File.WriteAllText(filePath, csv);
+        }
+
+        public static string ToCsv(LocresNamespace locresNamespace)
+        {
             var rows = new List<string[]>();
             // 키값이 고유한지 확인해야한다.
             var keyHash = new HashSet<string>();
@@ -132,16 +144,7 @@ namespace Paratranz.UE5
                 keyHash.Add(strKey);
             }
 
-            var nsName = locresNamespace.Name;
-            if (nsName == "")
-            {
-                nsName = g_UE5GlobalNamespace;
-            }
-            var filePath = Path.Combine(directory, nsName + ".csv");
-            using (var sw = new StreamWriter(filePath))
-            {
-                CsvWriter.Write(sw, g_ParadoxCsvHeader, rows);
-            }
+            return CsvWriter.WriteToText(g_ParadoxCsvHeader, rows);
         }
     }
 }
