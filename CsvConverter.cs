@@ -9,6 +9,22 @@ namespace Paratranz.UE5
         static readonly string g_UE5GlobalNamespace = "GLOBAL_NAMESPACE";
         static readonly CsvOptions g_CsvOptions = new() { AllowNewLineInEnclosedFieldValues = true };
 
+        public static void Import(string locresFilePath, params string[] filePaths)
+        {
+            using var fs = File.OpenRead(locresFilePath);
+            var locresFile = new LocresFile();
+            locresFile.Load(fs);
+            Import(locresFile, filePaths);
+        }
+
+        public static void Export(string locresFilePath, string directory)
+        {
+            using var fs = File.OpenRead(locresFilePath);
+            var locresFile = new LocresFile();
+            locresFile.Load(fs);
+            Export(locresFile, directory);
+        }
+
         public static void Import(LocresFile locresFile, params string[] filePaths)
         {
             var nsMap = new Dictionary<string, LocresNamespace>();
