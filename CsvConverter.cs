@@ -6,7 +6,6 @@ namespace Paratranz.UE5
     public static class CsvConverter
     {
         static readonly string[] g_ParadoxCsvHeader = new[] { "key", "source", "target" };
-        static readonly string g_UE5GlobalNamespace = "GLOBAL_NAMESPACE";
         static readonly CsvOptions g_CsvOptions = new() { AllowNewLineInEnclosedFieldValues = true };
 
         public static void Import(string locresFilePath, params string[] filePaths)
@@ -30,12 +29,7 @@ namespace Paratranz.UE5
             var nsMap = new Dictionary<string, LocresNamespace>();
             foreach (var ns in locresFile)
             {
-                var nsName = ns.Name;
-                if (nsName == "")
-                {
-                    nsName = g_UE5GlobalNamespace;
-                }
-                nsMap.Add(nsName, ns);
+                nsMap.Add(ns.Name, ns);
             }
             foreach (var filePath in filePaths)
             {
@@ -74,8 +68,16 @@ namespace Paratranz.UE5
                 // WARNING
                 return;
             }
+            using (var fs = File.OpenRead(filePath))
+            {
+                ImportNamespace(locresNamespace, fs);
+            }
+        }
+
+        public static void ImportNamespace(LocresNamespace locresNamespace, Stream stream)
+        {
             var kvMap = new Dictionary<string, string>();
-            using (var sr = new StreamReader(filePath))
+            using (var sr = new StreamReader(stream))
             {
                 foreach (var line in CsvReader.Read(sr, g_CsvOptions))
                 {
@@ -87,7 +89,7 @@ namespace Paratranz.UE5
                     var key = line[0];
                     //var source = line[1];
                     var taret = line[2];
-                    
+
                     if (!kvMap.TryAdd(key, taret))
                     {
                         // WARNING
@@ -112,13 +114,8 @@ namespace Paratranz.UE5
 
         public static void ExportNamespace(LocresNamespace locresNamespace, string directory)
         {
-            var nsName = locresNamespace.Name;
-            if (nsName == "")
-            {
-                nsName = g_UE5GlobalNamespace;
-            }
             var csv = ToCsv(locresNamespace);
-            var filePath = Path.Combine(directory, nsName + ".csv");
+            var filePath = Path.Combine(directory, locresNamespace.Name + ".csv");
             File.WriteAllText(filePath, csv);
         }
 
