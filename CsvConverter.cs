@@ -108,7 +108,7 @@ namespace Paratranz.UE5
                 {
                     value = "";
                 }
-                str.Value = value;
+                str.Value = value.Replace("\\n", "\n");
             }
         }
 
