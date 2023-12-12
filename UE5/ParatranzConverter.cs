@@ -88,7 +88,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public void ImportCsv(params string[] files)
+        public void ImportCsv(Stream stream, params string[] files)
         {
             var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
 
@@ -135,6 +135,8 @@ namespace Paratranz.UE5
                     str.Value = value.Replace("\\n", "\n");
                 }
             }
+
+            m_LocresFile.Save(stream);
         }
 
         public void ExportJson(string directory)
@@ -153,7 +155,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public void ImportJson(params string[] files)
+        public void ImportJson(Stream stream, params string[] files)
         {
             var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
 
@@ -191,6 +193,8 @@ namespace Paratranz.UE5
                     str.Value = value.Replace("\\n", "\n");
                 }
             }
+
+            m_LocresFile.Save(stream);
         }
     }
 }
