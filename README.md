@@ -31,9 +31,6 @@ using (var fs = File.Create(newFilePath))
 {
     var files = Directory.GetFiles(dataDirectory);
     converter.ImportCsv(fs, files);
-
-    or...
-
     converter.ImportJson(fs, files);
 }
 ```
