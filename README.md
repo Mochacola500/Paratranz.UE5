@@ -2,8 +2,7 @@
 A client library for converting .locres File.
 
 # Feature
-
-- CSV and Json Convert
+- Locres convert to json or csv
 
 # Usage
 
