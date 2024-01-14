@@ -76,7 +76,49 @@ namespace Paratranz.UE5
             return sb.ToString();
         }
 
-        public static void FromCSV(LocresFile locresFile, string key, string path)
+        public static void FromCSV(LocresFile locresFile, string path)
+        {
+            var key = Path.GetFileNameWithoutExtension(path);
+            FromCSV(key, locresFile, path);
+        }
+
+        public static void FromJson(LocresFile locresFile, string path)
+        {
+            var key = Path.GetFileNameWithoutExtension(path);
+            FromJson(key, locresFile, path);
+        }
+
+        public static void FromYml(LocresFile locresFile, string path)
+        {
+            var key = Path.GetFileNameWithoutExtension(path);
+            FromYml(key, locresFile, path);
+        }
+
+        public static void FromCSVs(LocresFile locresFile, params string[] files)
+        {
+            foreach (var inputFile in files)
+            {
+                FromCSV(locresFile, inputFile);
+            }
+        }
+
+        public static void FromJsons(LocresFile locresFile, params string[] files)
+        {
+            foreach (var inputFile in files)
+            {
+                FromJson(locresFile, inputFile);
+            }
+        }
+
+        public static void FromYmls(LocresFile locresFile, params string[] files)
+        {
+            foreach (var inputFile in files)
+            {
+                FromYml(locresFile, inputFile);
+            }
+        }
+
+        public static void FromCSV(string key, LocresFile locresFile, string path)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
@@ -96,7 +138,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromJson(LocresFile locresFile, string key, string path)
+        public static void FromJson(string key, LocresFile locresFile, string path)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
@@ -118,7 +160,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromYml(LocresFile locresFile, string key, string path)
+        public static void FromYml(string key, LocresFile locresFile, string path)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
