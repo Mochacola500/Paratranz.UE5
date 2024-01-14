@@ -15,6 +15,12 @@ namespace LocresLib
 
         }
 
+        public static LocresFile Load(string path)
+        {
+            using var fs = File.OpenRead(path);
+            return Load(fs);
+        }
+
         public static LocresFile Load(Stream stream)
         {
             if (!stream.CanSeek)
