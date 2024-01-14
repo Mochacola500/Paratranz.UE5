@@ -285,8 +285,32 @@ namespace Paratranz.UE5
 
                 var lines = File.ReadAllLines(file);
                 var kvMap = new Dictionary<string, string>();
-                foreach (var line in lines)
+                int i = 0;
+
+                // Read country tag.
+                for (; i < lines.Length; i++)
                 {
+                    var line = lines[i];
+                    if (line.StartsWith('#'))
+                    {
+                        continue;
+                    }
+                    line = line.Trim();
+                    if (line.StartsWith("l_") && line.EndsWith(':'))
+                    {
+                        var fileCountryTag = line.Substring(2, line.Length - 3);
+                        if (fileCountryTag != m_Options.CountryTag)
+                        {
+                            throw new Exception($"Invalid country tag.\nexpected:{m_Options.CountryTag}\nreal:{fileCountryTag}");
+                        }
+                        break;
+                    }
+                }
+
+                // Read data.
+                for (; i < lines.Length; ++i)
+                {
+                    var line = lines[i];
                     if (line.StartsWith('#'))
                     {
                         continue;
