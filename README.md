@@ -12,7 +12,10 @@ Create a instance
 ```cs
 using var fs = File.Open(path);
 var locres = LocresFile.Load(fs);
-var options = new ParatranzConverterOptions();
+var options = new ParatranzConverterOptions()
+{
+    SerializeOption = ParatranzSerializeOption.CSV
+};
 var converter = ParatranzConverter.Create(locres, options);
 ```
 
@@ -25,7 +28,5 @@ converter.Export(path);
 Import
 
 ```cs
-var files = Directory.GetFiles(dir);
-using var fs = File.Create(path);
 converter.Import(fs, files);
 ```
