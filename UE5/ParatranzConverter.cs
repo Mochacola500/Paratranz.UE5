@@ -9,6 +9,13 @@ namespace Paratranz.UE5
         public string key {  get; set; }
         public string original { get; set; }
         public string translation {  get; set; }
+
+        public JsonObject(string key, string original, string translation)
+        {
+            this.key = key;
+            this.original = original;
+            this.translation = translation;
+        }   
     }
 
     public class ParatranzConverter
@@ -65,10 +72,9 @@ namespace Paratranz.UE5
                     strVal = "";
                 }
 
-                rows.Add(new JsonObject { key = strKey, original = strVal, translation = "" });
+                rows.Add(new(strKey, strVal, ""));
                 keyHash.Add(strKey);
             }
-
             return JsonSerializer.Serialize(rows);
         }
 
