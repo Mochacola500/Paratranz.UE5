@@ -2,32 +2,25 @@
 A client library for converting .locres File.
 
 # Feature
-- Locres string enumeration
-- Convert to `csv`, `json` and `yml`
+- Locres string iteration
+- Convert to paratranz `csv`, `json` and `yml`
 
 # Usage
 
-Create a instance
-
+Create locresFile
 ```cs
-using var fs = File.Open(path);
-var locres = LocresFile.Load(fs);
-var options = new ParatranzConverterOptions()
-{
-    SerializeOption = ParatranzSerializeOption.Yml,
-    CountryTag = "english"
-};
-var converter = ParatranzConverter.Create(locres, options);
+var locres = LocresFile.Load(path);
 ```
 
 Export
-
 ```cs
-converter.Export(path);
+ParatranzConvert.ToCSV(locresNs);
+ParatranzConvert.ToJson(locresNs);
+ParatranzConvert.ToYml(locresNs);
 ```
-
 Import
-
 ```cs
-converter.Import(fs, files);
+ParatranzConvert.FromCSV(locres, key, path);
+ParatranzConvert.FromJson(locres, key, path);
+ParatranzConvert.FromYml(locres, key, path);
 ```
