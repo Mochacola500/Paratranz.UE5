@@ -24,13 +24,86 @@ namespace Paratranz.UE5
         static readonly CsvOptions g_CsvOptions = new() { AllowNewLineInEnclosedFieldValues = true };
 
         readonly LocresFile m_LocresFile;
+        readonly ParatranzConverterOptions m_Options;
 
-        public ParatranzConverter(LocresFile file)
+        ParatranzConverter(LocresFile file, ParatranzConverterOptions options)
         {
             m_LocresFile = file;
+            m_Options = options;
         }
 
-        public static string ToCsv(LocresNamespace locresNamespace)
+        public static ParatranzConverter Create(LocresFile file, ParatranzConverterOptions? options = null)
+        {
+            if (options == null)
+            {
+                options = new();
+            }
+            return new(file, options);
+        }
+
+        Func<LocresNamespace, string> GetExportFunction()
+        {
+            switch (m_Options.SerializeOption)
+            {
+                case ParatranzSerializeOption.CSV:
+                    return ToCSV;
+                case ParatranzSerializeOption.Json:
+                    return ToJson;
+                default:
+                    return (ns) => "";
+            }
+        }
+
+        Action<Stream, string[]> GetImportFunction()
+        {
+            switch (m_Options.SerializeOption)
+            {
+                case ParatranzSerializeOption.CSV:
+                    return FromCSV;
+                case ParatranzSerializeOption.Json:
+                    return FromJson;
+                default:
+                    return (stream, files) => { };
+            }
+        }
+
+        string GetExtension()
+        {
+            switch (m_Options.SerializeOption)
+            {
+                case ParatranzSerializeOption.CSV:
+                    return ".csv";
+                case ParatranzSerializeOption.Json:
+                    return ".json";
+                default:
+                    return ".txt";
+            }
+        }
+
+        public void Export(string directory)
+        {
+            var fn = GetExportFunction();
+            var extension = GetExtension();
+
+            foreach (var ns in m_LocresFile)
+            {
+                if (ns == null)
+                {
+                    continue;
+                }
+                var text = fn.Invoke(ns);
+                var path = Path.Combine(directory, ns.Name + extension);
+                File.WriteAllText(path, text);
+            }
+        }
+
+        public void Import(Stream stream, params string[] files)
+        {
+            var fn = GetImportFunction();
+            fn.Invoke(stream, files);
+        }
+
+        string ToCSV(LocresNamespace locresNamespace)
         {
             var rows = new List<string[]>();
             var keyHash = new HashSet<string>();
@@ -54,7 +127,7 @@ namespace Paratranz.UE5
             return CsvWriter.WriteToText(g_CsvHeader, rows);
         }
 
-        public static string ToJson(LocresNamespace locresNamespace)
+        string ToJson(LocresNamespace locresNamespace)
         {
             var rows = new List<JsonObject>();
             var keyHash = new HashSet<string>();
@@ -78,23 +151,7 @@ namespace Paratranz.UE5
             return JsonSerializer.Serialize(rows);
         }
 
-        public void ExportCsv(string directory)
-        {
-            foreach (var ns in m_LocresFile)
-            {
-                if (ns == null)
-                {
-                    // ERROR
-                    continue;
-                }
-                
-                var csv = ToCsv(ns);
-                var path = Path.Combine(directory, ns.Name + ".csv");
-                File.WriteAllText(path, csv);
-            }
-        }
-
-        public void ImportCsv(Stream stream, params string[] files)
+        void FromCSV(Stream stream, params string[] files)
         {
             var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
 
@@ -145,23 +202,7 @@ namespace Paratranz.UE5
             m_LocresFile.Save(stream);
         }
 
-        public void ExportJson(string directory)
-        {
-            foreach (var ns in m_LocresFile)
-            {
-                if (ns == null)
-                {
-                    // ERROR
-                    continue;
-                }
-
-                var csv = ToJson(ns);
-                var path = Path.Combine(directory, ns.Name + ".json");
-                File.WriteAllText(path, csv);
-            }
-        }
-
-        public void ImportJson(Stream stream, params string[] files)
+        void FromJson(Stream stream, params string[] files)
         {
             var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
 
