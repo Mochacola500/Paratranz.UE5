@@ -5,5 +5,6 @@ namespace Paratranz.UE5
     {
         CSV,
         Json,
+        Yml,
     }
 }

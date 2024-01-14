@@ -1,5 +1,6 @@
 ﻿using Csv;
 using LocresLib;
+using System.Text;
 using System.Text.Json;
 
 namespace Paratranz.UE5
@@ -49,12 +50,14 @@ namespace Paratranz.UE5
                     return ToCSV;
                 case ParatranzSerializeOption.Json:
                     return ToJson;
+                case ParatranzSerializeOption.Yml:
+                    return ToYml;
                 default:
                     return (ns) => "";
             }
         }
 
-        Action<Stream, string[]> GetImportFunction()
+        Action<string[]> GetImportFunction()
         {
             switch (m_Options.SerializeOption)
             {
@@ -62,8 +65,10 @@ namespace Paratranz.UE5
                     return FromCSV;
                 case ParatranzSerializeOption.Json:
                     return FromJson;
+                case ParatranzSerializeOption.Yml:
+                    return FromYml;
                 default:
-                    return (stream, files) => { };
+                    return (files) => { };
             }
         }
 
@@ -75,6 +80,8 @@ namespace Paratranz.UE5
                     return ".csv";
                 case ParatranzSerializeOption.Json:
                     return ".json";
+                case ParatranzSerializeOption.Yml:
+                    return ".yml";
                 default:
                     return ".txt";
             }
@@ -85,7 +92,7 @@ namespace Paratranz.UE5
             var fn = GetExportFunction();
             var extension = GetExtension();
 
-            foreach (var ns in m_LocresFile)
+            foreach (var ns in m_LocresFile.Values)
             {
                 if (ns == null)
                 {
@@ -100,7 +107,8 @@ namespace Paratranz.UE5
         public void Import(Stream stream, params string[] files)
         {
             var fn = GetImportFunction();
-            fn.Invoke(stream, files);
+            fn.Invoke(files);
+            m_LocresFile.Save(stream);
         }
 
         string ToCSV(LocresNamespace locresNamespace)
@@ -108,7 +116,7 @@ namespace Paratranz.UE5
             var rows = new List<string[]>();
             var keyHash = new HashSet<string>();
 
-            foreach (var str in locresNamespace)
+            foreach (var str in locresNamespace.Values)
             {
                 var strKey = str.Key;
                 var strVal = str.Value;
@@ -132,7 +140,7 @@ namespace Paratranz.UE5
             var rows = new List<JsonObject>();
             var keyHash = new HashSet<string>();
 
-            foreach (var str in locresNamespace)
+            foreach (var str in locresNamespace.Values)
             {
                 var strKey = str.Key;
                 var strVal = str.Value;
@@ -151,15 +159,37 @@ namespace Paratranz.UE5
             return JsonSerializer.Serialize(rows);
         }
 
-        void FromCSV(Stream stream, params string[] files)
+        string ToYml(LocresNamespace locresNamespace)
         {
-            var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
+            var keyHash = new HashSet<string>();
+            var sb = new StringBuilder(1024 * 1024);
+            sb.Append("l_").Append(m_Options.CountryTag).AppendLine(":");
+            foreach (var str in locresNamespace.Values)
+            {
+                var strKey = str.Key;
+                var strVal = str.Value;
+                if (keyHash.Contains(strKey))
+                {
+                    throw new Exception("Duplicate key exception.");
+                }
+                if (string.IsNullOrEmpty(strVal))
+                {
+                    strVal = "";
+                }
+                sb.Append(strKey).Append(": ").AppendLine(strVal);
+                keyHash.Add(strKey);
+            }
 
+            return sb.ToString();
+        }
+
+        void FromCSV(params string[] files)
+        {
             foreach (var file in files)
             {
                 var name = Path.GetFileNameWithoutExtension(file);
 
-                if (!nsMap.TryGetValue(name, out var ns))
+                if (!m_LocresFile.TryGetValue(name, out var ns))
                 {
                     throw new Exception($"\"{name}\" is not exist in locres file.\nFile name must be the same as the namespace.");
                 }
@@ -185,7 +215,7 @@ namespace Paratranz.UE5
                     }
                 }
 
-                foreach (var str in ns)
+                foreach (var str in ns.Values)
                 {
                     if (!kvMap.TryGetValue(str.Key, out var value))
                     {
@@ -198,19 +228,15 @@ namespace Paratranz.UE5
                     str.Value = value.Replace("\\n", "\n");
                 }
             }
-
-            m_LocresFile.Save(stream);
         }
 
-        void FromJson(Stream stream, params string[] files)
+        void FromJson(params string[] files)
         {
-            var nsMap = m_LocresFile.ToDictionary(x => x.Name, x => x);
-
             foreach (var file in files)
             {
                 var name = Path.GetFileNameWithoutExtension(file);
 
-                if (!nsMap.TryGetValue(name, out var ns))
+                if (!m_LocresFile.TryGetValue(name, out var ns))
                 {
                     throw new Exception($"\"{name}\" is not exist in locres file.\nFile name must be the same as the namespace.");
                 }
@@ -227,7 +253,7 @@ namespace Paratranz.UE5
                 }
                 var kvMap = jsonArray.ToDictionary(x => x.key, x => x.translation);
 
-                foreach (var str in ns)
+                foreach (var str in ns.Values)
                 {
                     if (!kvMap.TryGetValue(str.Key, out var value))
                     {
@@ -240,8 +266,56 @@ namespace Paratranz.UE5
                     str.Value = value.Replace("\\n", "\n");
                 }
             }
+        }
 
-            m_LocresFile.Save(stream);
+        void FromYml(params string[] files)
+        {
+            foreach (var file in files)
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+
+                if (!m_LocresFile.TryGetValue(name, out var ns))
+                {
+                    throw new Exception($"\"{name}\" is not exist in locres file.\nFile name must be the same as the namespace.");
+                }
+                if (ns == null)
+                {
+                    throw new Exception("Invalid locresFile exception.");
+                }
+
+                var lines = File.ReadAllLines(file);
+                var kvMap = new Dictionary<string, string>();
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith('#'))
+                    {
+                        continue;
+                    }
+                    var result = line.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (result.Length == 0)
+                    {
+                        continue;
+                    }
+                    if (result.Length == 1)
+                    {
+                        throw new Exception($"Invalid context\n{result[0]}");
+                    }
+                    kvMap.Add(result[0], result[1]);
+                }
+
+                foreach (var str in ns.Values)
+                {
+                    if (!kvMap.TryGetValue(str.Key, out var value))
+                    {
+                        continue;
+                    }
+                    if (value == null)
+                    {
+                        value = "";
+                    }
+                    str.Value = value.Replace("\\n", "\n");
+                }
+            }
         }
     }
 }

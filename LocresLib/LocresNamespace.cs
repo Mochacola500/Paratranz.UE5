@@ -1,7 +1,7 @@
 ﻿
 namespace LocresLib
 {
-    public class LocresNamespace : List<LocresString>
+    public class LocresNamespace : Dictionary<string, LocresString>
     {
         public string Name { get; set; }
 

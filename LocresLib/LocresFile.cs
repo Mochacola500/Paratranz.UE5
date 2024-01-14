@@ -3,19 +3,12 @@ using LocresLib.IO;
 
 namespace LocresLib
 {
-    public class LocresFile : List<LocresNamespace>
+    public class LocresFile : Dictionary<string, LocresNamespace>
     {
-        public LocresVersion Version { get; private set; }
-
-        private static byte[] LOCRES_MAGIC = new byte[]{
+        static byte[] g_LocresMagic = new byte[]
+        {
             0x0E, 0x14, 0x74, 0x75, 0x67, 0x4A, 0x03, 0xFC, 0x4A, 0x15, 0x90, 0x9D, 0xC3, 0x37, 0x7F, 0x1B
         };
-
-        public int TotalCount
-        {
-            get;
-            init;
-        }
 
         LocresFile()
         {
@@ -35,7 +28,7 @@ namespace LocresLib
 
             byte[] magic = reader.ReadBytes(0x10);
 
-            if (LOCRES_MAGIC.SequenceEqual(magic))
+            if (g_LocresMagic.SequenceEqual(magic))
             {
                 version = (LocresVersion)reader.ReadByte();
             }
@@ -84,10 +77,7 @@ namespace LocresLib
                 reader.ReadInt32(); // entriesCount
 
             int namespaceCount = reader.ReadInt32();
-            var file = new LocresFile()
-            {
-                TotalCount = namespaceCount
-            };
+            var file = new LocresFile();
 
             for (int i = 0; i < namespaceCount; ++i)
             {
@@ -122,9 +112,9 @@ namespace LocresLib
                         localizedString = reader.ReadUnrealString();
                     }
 
-                    ns.Add(new(stringKey, localizedString, sourceStringHash));
+                    ns.Add(stringKey, new(stringKey, localizedString, sourceStringHash));
                 }
-                file.Add(ns);
+                file.Add(ns.Name, ns);
             }
 
             return file;
@@ -146,7 +136,7 @@ namespace LocresLib
                     return;
                 }
 
-                w.Write(LOCRES_MAGIC);                  // byte LOCRES_MAGIC[16]
+                w.Write(g_LocresMagic);                  // byte LOCRES_MAGIC[16]
                 w.Write((byte)outputVersion);           // byte version
                 long arrayOffset = w.BaseStream.Position;
                 w.Write((long)0);                       // long localizedStringArrayOffset
@@ -159,7 +149,7 @@ namespace LocresLib
                 var stringTable = new List<StringTableEntry>();
                 int localizedStringEntryCount = 0;
 
-                foreach (var localizationNamespace in this)
+                foreach (var localizationNamespace in Values)
                 {
                     if (outputVersion == LocresVersion.Optimized_CityHash64_UTF16)
                         w.Write(CityHash64_utf16_to_uint32(localizationNamespace.Name));
@@ -169,7 +159,7 @@ namespace LocresLib
                     w.WriteUnrealString(localizationNamespace.Name);
                     w.Write(localizationNamespace.Count); // int localizaedStringCounnt
 
-                    foreach (var localizedString in localizationNamespace)
+                    foreach (var localizedString in localizationNamespace.Values)
                     {
                         if (outputVersion == LocresVersion.Optimized_CityHash64_UTF16)
                             w.Write(CityHash64_utf16_to_uint32(localizedString.Key));
@@ -226,16 +216,16 @@ namespace LocresLib
             }
         }
 
-        private void SaveLegacy(BinaryWriter w)
+        void SaveLegacy(BinaryWriter w)
         {
             w.Write(Count); // int namespaceCount
 
-            foreach (var localizationNamespace in this)
+            foreach (var localizationNamespace in Values)
             {
                 w.WriteUnrealString(localizationNamespace.Name, forceUnicode: true);
                 w.Write(localizationNamespace.Count);
 
-                foreach (var localizedString in localizationNamespace)
+                foreach (var localizedString in localizationNamespace.Values)
                 {
                     w.WriteUnrealString(localizedString.Key);
                     w.Write(localizedString.SourceStringHash);
@@ -251,7 +241,7 @@ namespace LocresLib
         /// </summary>
         /// <param name="s">Input string</param>
         /// <returns>uint32 hash of CityHash64 hash of input string</returns>
-        public static uint CityHash64_utf16_to_uint32(string s)
+        static uint CityHash64_utf16_to_uint32(string s)
         {
             if (s.Length == 0)
                 return 0;
@@ -262,7 +252,7 @@ namespace LocresLib
             return r;
         }
 
-        private sealed class StringTableEntry
+        class StringTableEntry
         {
             public string Text { get; set; }
             public int RefCount { get; set; }
