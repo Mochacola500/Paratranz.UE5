@@ -3,15 +3,17 @@ namespace LocresLib
 {
     public class LocresNamespace : Dictionary<string, LocresString>
     {
+        public LocresFile File { get; init; }
         public string Name { get; set; }
 
-        public LocresNamespace(string name) : this(name, 0)
+        public LocresNamespace(LocresFile file, string name) : this(file, name, 0)
         {
 
         }
 
-        public LocresNamespace(string name, int capacity) : base(capacity) 
+        public LocresNamespace(LocresFile file, string name, int capacity) : base(capacity) 
         {
+            File = file;
             Name = name;
         }
 

@@ -10,18 +10,14 @@ namespace LocresLib
             0x0E, 0x14, 0x74, 0x75, 0x67, 0x4A, 0x03, 0xFC, 0x4A, 0x15, 0x90, 0x9D, 0xC3, 0x37, 0x7F, 0x1B
         };
 
-        LocresFile()
-        {
+        public string CountryTag { get; set; }
 
+        LocresFile(string countryTag)
+        {
+            CountryTag = countryTag;    
         }
 
-        public static LocresFile Load(string path)
-        {
-            using var fs = File.OpenRead(path);
-            return Load(fs);
-        }
-
-        public static LocresFile Load(Stream stream)
+        public static LocresFile Load(Stream stream, string countryTag = "english")
         {
             if (!stream.CanSeek)
                 throw new ArgumentException("Stream must be seekable.");
@@ -83,7 +79,7 @@ namespace LocresLib
                 reader.ReadInt32(); // entriesCount
 
             int namespaceCount = reader.ReadInt32();
-            var file = new LocresFile();
+            var file = new LocresFile(countryTag);
 
             for (int i = 0; i < namespaceCount; ++i)
             {
@@ -94,7 +90,7 @@ namespace LocresLib
 
                 int keyCount = reader.ReadInt32();
 
-                var ns = new LocresNamespace(namespaceKey);
+                var ns = new LocresNamespace(file, namespaceKey);
 
                 for (int j = 0; j < keyCount; j++)
                 {

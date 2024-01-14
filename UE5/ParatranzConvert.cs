@@ -10,6 +10,39 @@ namespace Paratranz.UE5
         static readonly string[] g_CsvHeader = new[] { "key", "source", "target" };
         static readonly CsvOptions g_CsvOptions = new() { AllowNewLineInEnclosedFieldValues = true };
 
+        public static string To(ParatranzConvertType type, LocresNamespace locresNs)
+        {
+            switch (type)
+            {
+                case ParatranzConvertType.CSV:
+                    return ToCSV(locresNs);
+                case ParatranzConvertType.Json:
+                    return ToJson(locresNs);
+                case ParatranzConvertType.Yml:
+                    return ToYml(locresNs);
+                default:
+                    return "";
+            }
+        }
+
+        public static void From(ParatranzConvertType type, LocresFile locresFile, string key, string path)
+        {
+            switch (type)
+            {
+                case ParatranzConvertType.CSV:
+                    FromCSV(locresFile, key, path);
+                    break;
+                case ParatranzConvertType.Json:
+                    FromJson(locresFile, key, path);
+                    break;
+                case ParatranzConvertType.Yml:
+                    FromYml(locresFile, key, path);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public static string ToCSV(LocresNamespace locresNs)
         {
             var values = locresNs.Values;
@@ -52,12 +85,12 @@ namespace Paratranz.UE5
             return JsonSerializer.Serialize(rows);
         }
 
-        public static string ToYml(LocresNamespace locresNs, string countryTag)
+        public static string ToYml(LocresNamespace locresNs)
         {
             int capacity = locresNs.Count;
             var keyHash = new HashSet<string>(capacity);
             var sb = new StringBuilder(1024 * 1024);
-            sb.Append("l_").Append(countryTag).AppendLine(":");
+            sb.Append("l_").Append(locresNs.File.CountryTag).AppendLine(":");
             foreach (var str in locresNs.Values)
             {
                 var strKey = str.Key;
