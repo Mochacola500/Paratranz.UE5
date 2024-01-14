@@ -3,7 +3,7 @@ A client library for converting .locres File.
 
 # Feature
 - Locres string enumeration
-- Convert to data (json, csv)
+- Convert to `json` or `csv`
 
 # Usage
 
