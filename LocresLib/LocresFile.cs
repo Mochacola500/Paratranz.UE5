@@ -10,12 +10,7 @@ namespace LocresLib
             0x0E, 0x14, 0x74, 0x75, 0x67, 0x4A, 0x03, 0xFC, 0x4A, 0x15, 0x90, 0x9D, 0xC3, 0x37, 0x7F, 0x1B
         };
 
-        public string CountryTag { get; set; }
-
-        LocresFile(string countryTag)
-        {
-            CountryTag = countryTag;    
-        }
+        LocresFile() { }
 
         public static LocresFile Load(Stream stream, string countryTag = "english")
         {
@@ -79,7 +74,7 @@ namespace LocresLib
                 reader.ReadInt32(); // entriesCount
 
             int namespaceCount = reader.ReadInt32();
-            var file = new LocresFile(countryTag);
+            var file = new LocresFile();
 
             for (int i = 0; i < namespaceCount; ++i)
             {
