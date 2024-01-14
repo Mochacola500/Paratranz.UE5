@@ -2,7 +2,7 @@
 
 namespace Paratranz.UE5
 {
-    public abstract class ParatranzConverter
+    public abstract class ParatranzConverter : IParatranzConverter
     {
         protected readonly LocresFile m_LocresFile;
 

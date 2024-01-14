@@ -94,7 +94,7 @@ namespace Paratranz.UE5
             FromYml(key, locresFile, path);
         }
 
-        public static void FromCSVs(LocresFile locresFile, params string[] files)
+        public static void FromCSV(LocresFile locresFile, params string[] files)
         {
             foreach (var inputFile in files)
             {
@@ -102,7 +102,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromJsons(LocresFile locresFile, params string[] files)
+        public static void FromJson(LocresFile locresFile, params string[] files)
         {
             foreach (var inputFile in files)
             {
@@ -110,7 +110,7 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromYmls(LocresFile locresFile, params string[] files)
+        public static void FromYml(LocresFile locresFile, params string[] files)
         {
             foreach (var inputFile in files)
             {
