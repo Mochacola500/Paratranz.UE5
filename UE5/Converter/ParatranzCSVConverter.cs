@@ -16,10 +16,10 @@ namespace Paratranz.UE5
             }
         }
 
-        public override void Import(string key, string inputPath, string outputPath)
+        public override void Import(string key, string newFileName, string file)
         {
-            ParatranzConvert.FromCSV(m_LocresFile, key, inputPath);
-            using var stream = File.Create(outputPath);
+            ParatranzConvert.FromCSV(m_LocresFile, key, file);
+            using var stream = File.Create(newFileName);
             m_LocresFile.Save(stream);
         }
     }

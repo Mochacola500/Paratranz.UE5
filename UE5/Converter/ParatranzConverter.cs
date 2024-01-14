@@ -12,12 +12,20 @@ namespace Paratranz.UE5
         }
 
         public abstract void Export(string directory);
-        public abstract void Import(string key, string inputPath, string outputPath);
+        public abstract void Import(string key, string newFileName, string file);
 
-        public void Import(string inputPath, string outputPath)
+        public void Import(string newFileName, string file)
         {
-            var key = Path.GetFileNameWithoutExtension(inputPath);
-            Import(key, inputPath, outputPath);
+            var key = Path.GetFileNameWithoutExtension(file);
+            Import(key, newFileName, file);
+        }
+
+        public void Import(string newFileName, params string[] files)
+        {
+            foreach (var inputFile in files)
+            {
+                Import(newFileName, inputFile);
+            }
         }
     }
 }
