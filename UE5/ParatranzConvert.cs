@@ -76,22 +76,22 @@ namespace Paratranz.UE5
             return sb.ToString();
         }
 
-        public static void FromCSV(LocresFile locresFile, string path)
+        public static void FromCSV(LocresFile locresFile, string file)
         {
-            var key = Path.GetFileNameWithoutExtension(path);
-            FromCSV(key, locresFile, path);
+            var key = Path.GetFileNameWithoutExtension(file);
+            FromCSV(key, locresFile, file);
         }
 
-        public static void FromJson(LocresFile locresFile, string path)
+        public static void FromJson(LocresFile locresFile, string file)
         {
-            var key = Path.GetFileNameWithoutExtension(path);
-            FromJson(key, locresFile, path);
+            var key = Path.GetFileNameWithoutExtension(file);
+            FromJson(key, locresFile, file);
         }
 
-        public static void FromYml(LocresFile locresFile, string path)
+        public static void FromYml(LocresFile locresFile, string file)
         {
-            var key = Path.GetFileNameWithoutExtension(path);
-            FromYml(key, locresFile, path);
+            var key = Path.GetFileNameWithoutExtension(file);
+            FromYml(key, locresFile, file);
         }
 
         public static void FromCSV(LocresFile locresFile, params string[] files)
@@ -118,13 +118,13 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromCSV(string key, LocresFile locresFile, string path)
+        public static void FromCSV(string key, LocresFile locresFile, string file)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
-                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{path}");
+                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{file}");
             }
-            using var sr = new StreamReader(path);
+            using var sr = new StreamReader(file);
             foreach (var line in CsvReader.Read(sr, g_CsvOptions))
             {
                 if (line.ColumnCount < 3)
@@ -138,14 +138,14 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromJson(string key, LocresFile locresFile, string path)
+        public static void FromJson(string key, LocresFile locresFile, string file)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
-                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{path}");
+                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{file}");
             }
 
-            var jsonStr = File.ReadAllText(path);
+            var jsonStr = File.ReadAllText(file);
             var jsonArray = JsonSerializer.Deserialize<List<JsonObject>>(jsonStr);
             if (jsonArray == null)
             {
@@ -160,14 +160,14 @@ namespace Paratranz.UE5
             }
         }
 
-        public static void FromYml(string key, LocresFile locresFile, string path)
+        public static void FromYml(string key, LocresFile locresFile, string file)
         {
             if (!locresFile.TryGetValue(key, out var ns))
             {
-                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{path}");
+                throw new Exception($"key is not exist in locres file.\nKey:{key}\nPath:{file}");
             }
 
-            var lines = File.ReadAllLines(path);
+            var lines = File.ReadAllLines(file);
             int i = 0;
             // Read country tag.
             for (; i < lines.Length; ++i)
