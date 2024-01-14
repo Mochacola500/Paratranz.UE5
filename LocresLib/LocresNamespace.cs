@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace LocresLib
 {
     public class LocresNamespace : List<LocresString>
     {
-        public LocresNamespace() { }
-
-        public LocresNamespace(int capacity) : base(capacity) { }
-
         public string Name { get; set; }
+
+        public LocresNamespace(string name) : this(name, 0)
+        {
+
+        }
+
+        public LocresNamespace(string name, int capacity) : base(capacity) 
+        {
+            Name = name;
+        }
 
         public override string ToString()
         {

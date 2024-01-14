@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using LocresLib.IO;
 
 namespace LocresLib
@@ -17,16 +13,16 @@ namespace LocresLib
 
         public int TotalCount
         {
-            get
-            {
-                int total = 0;
-                foreach (var ns in this)
-                    total += ns.Count;
-                return total;
-            }
+            get;
+            init;
         }
 
-        public void Load(Stream stream)
+        LocresFile()
+        {
+
+        }
+
+        public static LocresFile Load(Stream stream)
         {
             if (!stream.CanSeek)
                 throw new ArgumentException("Stream must be seekable.");
@@ -34,96 +30,104 @@ namespace LocresLib
             if (!stream.CanRead)
                 throw new ArgumentException("Stream must be readable.");
 
-            Clear();
+            using var reader = new BinaryReader(stream);
+            var version = LocresVersion.Legacy;
 
-            using (var reader = new BinaryReader(stream))
+            byte[] magic = reader.ReadBytes(0x10);
+
+            if (LOCRES_MAGIC.SequenceEqual(magic))
             {
-                byte[] magic = reader.ReadBytes(0x10);
+                version = (LocresVersion)reader.ReadByte();
+            }
+            else
+            {
+                version = LocresVersion.Legacy;
+                reader.BaseStream.Position = 0;
+            }
 
-                if (LOCRES_MAGIC.SequenceEqual(magic))
+            string[]? localizedStringArray = null;
+
+            if (version >= LocresVersion.Compact)
+            {
+                long localizedStringArrayOffset = reader.ReadInt64();
+                long tempOffset = reader.BaseStream.Position;
+                reader.BaseStream.Position = localizedStringArrayOffset;
+
+                int localizedStringCount = reader.ReadInt32();
+                localizedStringArray = new string[localizedStringCount];
+
+                if (version >= LocresVersion.Optimized)
                 {
-                    Version = (LocresVersion)reader.ReadByte();
+                    for (int i = 0; i < localizedStringCount; i++)
+                    {
+                        localizedStringArray[i] = reader.ReadUnrealString();
+                        reader.ReadInt32(); //refCount
+                    }
                 }
                 else
                 {
-                    Version = LocresVersion.Legacy;
-                    reader.BaseStream.Position = 0;
+                    for (int i = 0; i < localizedStringCount; i++)
+                    {
+                        localizedStringArray[i] = reader.ReadUnrealString();
+                    }
                 }
 
-                string[] localizedStringArray = null;
+                reader.BaseStream.Position = tempOffset;
+            }
 
-                if (Version >= LocresVersion.Compact)
+            if (localizedStringArray == null)
+            {
+                localizedStringArray = Array.Empty<string>();
+            }
+
+            if (version >= LocresVersion.Optimized)
+                reader.ReadInt32(); // entriesCount
+
+            int namespaceCount = reader.ReadInt32();
+            var file = new LocresFile()
+            {
+                TotalCount = namespaceCount
+            };
+
+            for (int i = 0; i < namespaceCount; ++i)
+            {
+                if (version >= LocresVersion.Optimized)
+                    reader.ReadUInt32(); // namespaceKeyHash
+
+                string namespaceKey = reader.ReadUnrealString();
+
+                int keyCount = reader.ReadInt32();
+
+                var ns = new LocresNamespace(namespaceKey);
+
+                for (int j = 0; j < keyCount; j++)
                 {
-                    long localizedStringArrayOffset = reader.ReadInt64();
-                    long tempOffset = reader.BaseStream.Position;
-                    reader.BaseStream.Position = localizedStringArrayOffset;
-
-                    int localizedStringCount = reader.ReadInt32();
-                    localizedStringArray = new string[localizedStringCount];
-
-                    if (Version >= LocresVersion.Optimized)
+                    if (version >= LocresVersion.Optimized)
                     {
-                        for (int i = 0; i < localizedStringCount; i++)
-                        {
-                            localizedStringArray[i] = reader.ReadUnrealString();
-                            reader.ReadInt32(); //refCount
-                        }
+                        var stringKeyHash = reader.ReadUInt32();
+                    }
+
+                    string stringKey = reader.ReadUnrealString();
+                    uint sourceStringHash = reader.ReadUInt32();
+
+                    string localizedString;
+
+                    if (version >= LocresVersion.Compact)
+                    {
+                        int stringIndex = reader.ReadInt32();
+                        localizedString = localizedStringArray[stringIndex];
                     }
                     else
                     {
-                        for (int i = 0; i < localizedStringCount; i++)
-                        {
-                            localizedStringArray[i] = reader.ReadUnrealString();
-                        }
+                        localizedString = reader.ReadUnrealString();
                     }
 
-                    reader.BaseStream.Position = tempOffset;
+                    ns.Add(new(stringKey, localizedString, sourceStringHash));
                 }
-
-                if (Version >= LocresVersion.Optimized)
-                    reader.ReadInt32(); // entriesCount
-
-                int namespaceCount = reader.ReadInt32();
-
-                for (int i = 0; i < namespaceCount; i++)
-                {
-                    if (Version >= LocresVersion.Optimized)
-                        reader.ReadUInt32(); // namespaceKeyHash
-
-                    string namespaceKey = reader.ReadUnrealString();
-
-                    int keyCount = reader.ReadInt32();
-
-                    var ns = new LocresNamespace() { Name = namespaceKey };
-
-                    for (int j = 0; j < keyCount; j++)
-                    {
-                        if (Version >= LocresVersion.Optimized)
-                        {
-                            var stringKeyHash = reader.ReadUInt32();
-                        }
-                        
-                        string stringKey = reader.ReadUnrealString();
-                        uint sourceStringHash = reader.ReadUInt32();
-
-                        string localizedString;
-
-                        if (Version >= LocresVersion.Compact)
-                        {
-                            int stringIndex = reader.ReadInt32();
-                            localizedString = localizedStringArray[stringIndex];
-                        }
-                        else
-                        {
-                            localizedString = reader.ReadUnrealString();
-                        }
-
-                        ns.Add(new LocresString(stringKey, localizedString, sourceStringHash));
-                    }
-
-                    Add(ns);
-                }
+                file.Add(ns);
             }
+
+            return file;
         }
 
         public void Save(Stream stream, LocresVersion outputVersion = LocresVersion.Compact)
@@ -180,7 +184,7 @@ namespace LocresLib
                         if (stringTableIndex == -1)
                         {
                             stringTableIndex = stringTable.Count;
-                            stringTable.Add(new StringTableEntry() { Text = localizedString.Value, RefCount = 1 });
+                            stringTable.Add(new(localizedString.Value, 1));
                         }
                         else
                         {
@@ -262,6 +266,12 @@ namespace LocresLib
         {
             public string Text { get; set; }
             public int RefCount { get; set; }
+
+            public StringTableEntry(string text, int refCount)
+            {
+                Text = text;
+                RefCount = refCount;
+            }   
         }
     }
 }
