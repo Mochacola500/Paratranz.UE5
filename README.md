@@ -10,25 +10,22 @@ A client library for converting .locres File.
 Create a instance
 
 ```cs
-using var fs = File.Open(filePath);
+using var fs = File.Open(path);
 var locres = LocresFile.Load(fs);
-var converter = new ParatranzConverter(locres);
+var options = new ParatranzConverterOptions();
+var converter = ParatranzConverter.Create(locres, options);
 ```
 
 Export
 
 ```cs
-converter.ExportCsv(savePath);
-converter.ExportJson(savePath);
+converter.Export(path);
 ```
 
 Import
 
 ```cs
-using (var fs = File.Create(newFilePath))
-{
-    var files = Directory.GetFiles(dataDirectory);
-    converter.ImportCsv(fs, files);
-    converter.ImportJson(fs, files);
-}
+var files = Directory.GetFiles(dir);
+using var fs = File.Create(path);
+converter.Import(fs, files);
 ```
