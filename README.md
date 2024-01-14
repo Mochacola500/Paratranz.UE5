@@ -44,5 +44,7 @@ csvConverter.Export(directory);
 Import
 ```cs
 var csvConverter = new ParatranzCSVConverter(locres);
-csvConverter.Import(inputPath, outputPath);
+csvConverter.Import(key, newFileName, file);
+csvConverter.Import(newFileName, file);
+csvConverter.Import(newFileName, files);
 ```
