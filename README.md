@@ -25,7 +25,5 @@ converter.Export(path);
 Import
 
 ```cs
-var files = Directory.GetFiles(dir);
-using var fs = File.Create(path);
 converter.Import(fs, files);
 ```
