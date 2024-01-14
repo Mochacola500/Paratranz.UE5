@@ -3,7 +3,7 @@ A client library for converting .locres File.
 
 # Feature
 - Locres string enumeration
-- Convert to `json` or `csv`
+- Convert to `csv`, `json` and `yml`
 
 # Usage
 
@@ -14,7 +14,8 @@ using var fs = File.Open(path);
 var locres = LocresFile.Load(fs);
 var options = new ParatranzConverterOptions()
 {
-    SerializeOption = ParatranzSerializeOption.CSV
+    SerializeOption = ParatranzSerializeOption.Yml,
+    CountryTag = "english"
 };
 var converter = ParatranzConverter.Create(locres, options);
 ```
