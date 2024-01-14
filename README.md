@@ -10,9 +10,8 @@ A client library for converting .locres File.
 Create a instance
 
 ```cs
-var locres = new LocresFile();
 using var fs = File.Open(filePath);
-locres.Load(fs);
+var locres = LocresFile.Load(fs);
 var converter = new ParatranzConverter(locres);
 ```
 
