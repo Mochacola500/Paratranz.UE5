@@ -5,35 +5,35 @@ A client library for converting .locres File.
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4e556876a3c54d5e8f2d2857c4f43894)][codacy]&nbsp;
 [![GitHub license](https://img.shields.io/github/license/cotes2020/jekyll-theme-chirpy.svg)][license]&nbsp;
 
-# Feature
+## Feature
 -  Locres string iteration
 -  Convert to paratranz `csv`, `json` and `yml`
 
-# Requirement
+## Requirement
 -  `Csv`
 
-# Usage
+## Usage
 
-Load
+### Load
 ```cs
 var locres = LocresFile.Load(file);
 ```
 
-Save
+### Save
 ```cs
 locres.Save(stream);
 ```
 
 ## Use Convert
 
-Export
+### Export
 ```cs
 ParatranzConvert.ToCSV(locresNs);
 ParatranzConvert.ToJson(locresNs);
 ParatranzConvert.ToYml(locresNs);
 ```
 
-Import
+### Import
 ```cs
 ParatranzConvert.FromJson(locres, file);
 ParatranzConvert.FromJson(key, locres, file);
@@ -42,13 +42,13 @@ ParatranzConvert.FromYml(key, locres, files);
 
 ## Use Converter
 
-Export
+### Export
 ```cs
 var csvConverter = new ParatranzCSVConverter(locres);
 csvConverter.Export(directory);
 ```
 
-Import
+### Import
 ```cs
 var csvConverter = new ParatranzCSVConverter(locres);
 csvConverter.Import(key, stream, file);
