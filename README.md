@@ -9,7 +9,7 @@ A client library for converting .locres File.
 
 Load
 ```cs
-var locres = LocresFile.Load(path);
+var locres = LocresFile.Load(file);
 ```
 
 Save
@@ -28,9 +28,9 @@ ParatranzConvert.ToYml(locresNs);
 
 Import
 ```cs
-ParatranzConvert.FromCSV(locres, key, path);
-ParatranzConvert.FromJson(locres, key, path);
-ParatranzConvert.FromYml(locres, key, path);
+ParatranzConvert.FromJson(locres, file);
+ParatranzConvert.FromJson(key, locres, file);
+ParatranzConvert.FromYml(key, locres, files);
 ```
 
 ## Use Converter
@@ -44,7 +44,7 @@ csvConverter.Export(directory);
 Import
 ```cs
 var csvConverter = new ParatranzCSVConverter(locres);
-csvConverter.Import(key, newFileName, file);
-csvConverter.Import(newFileName, file);
-csvConverter.Import(newFileName, files);
+csvConverter.Import(key, stream, file);
+csvConverter.Import(stream, file);
+csvConverter.Import(directory, files);
 ```
