@@ -48,6 +48,7 @@ namespace LocresLib
         private const uint64 K0 = 0xc3a5c85c97cb3127;
         private const uint64 K1 = 0xb492b66fbe98f273;
         private const uint64 K2 = 0x9ae16a3b2f90404f;
+        // Unused value.
         //private const uint64 K3 = 0xc949d7c7509e6557;
 
         // Magic numbers for 32-bit hashing. Copied from Murmur3.
@@ -512,7 +513,7 @@ namespace LocresLib
             return Low == other.Low && High == other.High;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -531,11 +532,7 @@ namespace LocresLib
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var v = (Low.GetHashCode() * 397) ^ High.GetHashCode();
-                return v;
-            }
+            return (Low.GetHashCode() * 397) ^ High.GetHashCode();
         }
     }
 }
