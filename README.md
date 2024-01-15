@@ -2,8 +2,8 @@
 A client library for converting .locres File.
 
 # Feature
-- Locres string iteration
-- Convert to paratranz `csv`, `json` and `yml`
+-	Locres string iteration
+-   Convert to paratranz `csv`, `json` and `yml`
 
 # Usage
 

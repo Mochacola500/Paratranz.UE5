@@ -6,7 +6,7 @@ namespace Paratranz.UE5
     {
         protected readonly LocresFile m_LocresFile;
 
-        public ParatranzConverter(LocresFile locresFile)
+        protected ParatranzConverter(LocresFile locresFile)
         {
             m_LocresFile = locresFile;
         }

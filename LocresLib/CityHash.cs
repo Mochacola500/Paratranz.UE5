@@ -48,13 +48,13 @@ namespace LocresLib
         private const uint64 K0 = 0xc3a5c85c97cb3127;
         private const uint64 K1 = 0xb492b66fbe98f273;
         private const uint64 K2 = 0x9ae16a3b2f90404f;
-        private const uint64 K3 = 0xc949d7c7509e6557;
+        //private const uint64 K3 = 0xc949d7c7509e6557;
 
         // Magic numbers for 32-bit hashing. Copied from Murmur3.
         private const uint32 C1 = 0xcc9e2d51;
         private const uint32 C2 = 0x1b873593;
 
-        public static bool BigEndian { get; set; } = false;
+        public static bool BigEndian { get; set; }
 
         // Hash 128 input bits down to 64 bits of output.
         // This is intended to be a reasonably good hash function.
@@ -514,9 +514,18 @@ namespace LocresLib
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
             return Equals((UInt128)obj);
         }
 
@@ -524,7 +533,8 @@ namespace LocresLib
         {
             unchecked
             {
-                return (Low.GetHashCode() * 397) ^ High.GetHashCode();
+                var v = (Low.GetHashCode() * 397) ^ High.GetHashCode();
+                return v;
             }
         }
     }

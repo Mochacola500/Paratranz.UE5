@@ -7,7 +7,12 @@ namespace LocresLib.IO
         internal static bool IsAsciiString(string value)
         {
             for (int i = 0; i < value.Length; i++)
-                if (value[i] > 127) return false;
+            {
+                if (value[i] > 127)
+                {
+                    return false;
+                }
+            }
             return true;
         }
         

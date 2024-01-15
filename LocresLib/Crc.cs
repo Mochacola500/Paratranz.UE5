@@ -60,7 +60,7 @@ namespace LocresLib
         /// <param name="value">String to calculate hash</param>
         /// <param name="CRC">Initial CRC32 hash, default is 0</param>
         /// <returns></returns>
-        public static uint StrCrc32(string value, uint CRC = 0)
+        public static uint StrCrc32(string value, uint CRC)
         {
             CRC = ~CRC;
             for (int i = 0; i < value.Length; i++)
